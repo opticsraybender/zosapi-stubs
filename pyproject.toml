@@ -1,0 +1,63 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "zosapi-stubs"
+version = "1.1.6"
+description = "Type stubs (PEP 561), a connection helper, and a rebuild tool for the Zemax OpticStudio ZOS-API"
+readme = "README.md"
+# pythonnet 3.1.0 ships wheels for CPython 3.10-3.14 (3.7-3.9 were dropped),
+# so the supported range is >=3.10,<3.15.
+requires-python = ">=3.10,<3.15"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Robert" }]
+keywords = ["zemax", "opticstudio", "zos-api", "stubs", "type-hints", "pythonnet"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Stubs Only",
+]
+
+# pythonnet is required at runtime to connect (zosapi_stubs.Connect) and to
+# rebuild the stubs (zosapi-stubgen) — both load the .NET DLLs through it.
+# Pinned to the version this package is verified against.
+dependencies = ["pythonnet==3.1.0"]
+
+[project.urls]
+Homepage = "https://github.com/opticsraybender/zosapi-stubs"
+Repository = "https://github.com/opticsraybender/zosapi-stubs"
+Issues = "https://github.com/opticsraybender/zosapi-stubs/issues"
+
+[project.scripts]
+zosapi-stubgen = "zosapi_stubs.stubgen.cli:main"
+
+# ---------------------------------------------------------------------------
+# Wheel contents
+# ---------------------------------------------------------------------------
+# Two things ship in the wheel:
+#   1. the runtime package (Connect + rebuild tool) -> src/zosapi_stubs  (importable)
+#   2. the PEP 561 stub-only package                -> ZOSAPI-stubs      (NOT importable)
+#
+# "ZOSAPI-stubs" is not a valid Python identifier, so hatchling's package
+# auto-discovery skips it; force-include puts the directory into the wheel
+# verbatim so it lands next to site-packages where type checkers look for it.
+[tool.hatch.build.targets.wheel]
+packages = ["src/zosapi_stubs"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"ZOSAPI-stubs" = "ZOSAPI-stubs"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/zosapi_stubs",
+    "ZOSAPI-stubs",
+    "README.md",
+    "pyproject.toml",
+]
